@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox, ttk, filedialog
 
 class App(tk.Tk):
     """
@@ -336,3 +336,28 @@ class myDialogBox(tk.Toplevel):
         """
         self.return_var = dict()
         self.destroy()
+
+class FileDialogButton(ttk.Button):
+    """
+    Button that opens a folder selection dialog.
+    Has to be instantiated after an associated myEntry, where the path will be displayed. 
+    Type is the type of file dialog to be opened. These are Tkinter's filedialog function names without the 'ask' prefix. Eg: directory or openfiles
+    """
+    def __init__(self, master, entry: myEntry, typ: str, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.master = master
+        self.entry = entry
+        self.config(command = self.callback)
+
+        # Set appropriate filedialog function
+        try:
+            self.filedialog_function = getattr(filedialog, 'ask' + typ)
+        except AttributeError as err:
+            raise AttributeError("Valid values for 'typ' are the ask function names of Tkinter's filedialog module: openfilename, saveasfilename, directory etc.") from err
+
+    def callback(self):
+        """
+        Opens the folder dialog
+        """
+        path = self.filedialog_function()
+        self.entry.set(path)
