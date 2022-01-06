@@ -1,6 +1,6 @@
 import tkinter
 from tkinter import Tk, messagebox
-import widgets as wd
+import better_widgets.widgets as wd
 
 class App(Tk):
     """
@@ -26,11 +26,7 @@ class App(Tk):
                 self.geometry(geometry)
             except tkinter.TclError as err:
                 raise ValueError(f"Wrong geometry string: {geometry}") from err
-
-        # Load main window (and all other widgets inside it)
-        self.main_window = wd.MainWindow(self)
-        self.main_window.pack()
-        
+     
         # Set initial minsize 
         self.update()
         self.initwidth = self.winfo_reqwidth()
@@ -82,6 +78,18 @@ class App(Tk):
 
         # Ask to confirmation before closing
         # self.protocol('WM_DELETE_WINDOW', self.really_quit)
+
+    def test_callback(self, caller: tkinter.Widget, logger = None) -> None:
+        """
+        Debugging method to test widget action callbacks. Accepts a logger instance if you prefer to log the message instead of printing it.
+        """
+        if logger:
+            try:
+                logger.debug(f"Test callback called by {caller}")
+            except AttributeError:
+                print(f"Invalid logger passed to test callback method: {logger}")
+        else:
+            print(f"Test callback called by {caller}")
 
 def test():
     """

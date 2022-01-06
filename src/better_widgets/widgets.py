@@ -10,38 +10,6 @@ class MainMenu(tk.Menu):
 
         # Associate menu with root
         self.master.config(menu=self)      
-
-class MainWindow(tk.Frame):
-    """
-    Subclass of Frame intended to be used as the main 'canvas' of the window,
-    under which all subframes (and actual widgets) are added.
-    """
-    def __init__(self, master, *args, **kwargs) -> None:
-        super().__init__ (master=master, *args, **kwargs)
-        self.master = master
-
-        # Add subframes
-        # Show widgets
-        self.show_widgets()
-
-    def show_widgets(self) -> None:
-        '''
-        Show child widgets and call the same method for each of them, so each widget enter the grid in succession
-        Implement as needed.
-        ''' 
-        # Configure grid weights
-        #self.rowconfigure(0, weight=1)
-
-        # Show each subframe
-        # self.left_frame.grid(row=0, column=0, padx=20, pady=20, sticky='nsew')
-
-        
-        # Call the same method of each child frame
-        # self.left_frame.show_widgets()
-        
-        # Update root widget's minsize
-        self.master.update_screen_min_size()
-
 class myText(tk.Text):
     """
     Subclass Text widget, adding a default scrollbar and methods for easy content read-write.
