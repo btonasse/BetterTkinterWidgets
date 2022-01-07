@@ -12,41 +12,48 @@ class MainMenu(tk.Menu):
         self.master.config(menu=self)      
 class myText(tk.Text):
     """
-    Subclass Text widget, adding a default scrollbar and methods for easy content read-write.
+    Subclass Text widget, adding a default scrollbar and a 'value' property + a few methods for easy content read-write.
     """
-    def __init__(self, master, *args, **kwargs) -> None:
-        super().__init__ (master=master, *args, **kwargs)
-        self.master=master
+    def __init__(self, *args, maxundo: int = 10, **kwargs) -> None:
+        super().__init__ (*args, **kwargs)
         self.scroll = ttk.Scrollbar(self.master, command=self.yview)
+        self.value = ""
         
-        self.config(undo=True, maxundo=10, wrap='word', yscrollcommand=self.scroll.set, padx=4)
+        self.config(undo=True, maxundo=maxundo, wrap='word', yscrollcommand=self.scroll.set, padx=4)
     
-    def get_all(self) -> str:
-        '''
+    @property
+    def value(self) -> str:
+        """
         Get all text in the textbox, trimming out any whitespace after the end
-        '''
-        return self.get('1.0', 'end').rstrip()
-    
-    def set_text(self, text: str) -> None:
-        '''
-        Replaces text on the widget
-        '''
+        """
+        self._value = self.get('1.0', 'end').rstrip()
+        return self._value
+
+    @property.setter    
+    def value(self, text: str) -> None:
+        """
+        Replaces text on the widget. Non strings are forcibly converted to str to avoid errors.
+        """
+        self._value = str(text)
         self.clear()
-        self.insert('end', text)
+        self.insert('end', self._value)
         self.edit_reset() # Clear undo stack
     
     def set_from_list(self, lst: list) -> None:
-        '''
-        Replaces text on the widget with the contents of a list
-        '''
+        """
+        Replaces text on the widget with the contents of a list, one per line.
+        Non strings are forcibly converted to str to avoid errors.
+        """
+        self._value = '\n'.join([str(x) for x in lst])
         self.clear()
-        self.insert('end', '\n'.join(lst))
+        self.insert('end', self._value)
         self.edit_reset() # Clear undo stack
 
     def clear(self) -> None:
-        '''
+        """
         Clear text widget
-        '''
+        """
+        self._value = ""
         self.delete('1.0', 'end')
         self.edit_reset()
 
@@ -99,11 +106,11 @@ class myCheckBox(ttk.Checkbutton):
         return self.value.get()
 
 class myEntry(ttk.Entry):
-    '''
+    """
     Checkbox with an StringVar if no 'textvariable' argument is passed upon instantiation.
     Also implements get and set methods (using self.value attribute).
     Unlike default ttk.Entry, exportselection defaults to 0.
-    '''
+    """
     def __init__(self, master, *args, **kwargs) -> None:
         super().__init__ (master=master, *args, **kwargs)
         self.master=master
@@ -124,12 +131,12 @@ class myEntry(ttk.Entry):
         return self.value.get()
 
 class myListbox(tk.Listbox):
-    '''
+    """
     Subclass of Listbox with embedded Scrollbar and a better interface to read and write values:
     set_items():
         Pass a list of strings to use them to populate the listbox
         
-    '''
+    """
     def __init__(self, master, *args, **kwargs) -> None:
         super().__init__ (master=master, *args, **kwargs)
         self.master = master
@@ -146,9 +153,9 @@ class myListbox(tk.Listbox):
             self.config(listvariable=self.value)
     
     def set_items(self, items: list) -> None:
-        '''
+        """
         Set list items. List elements must be strings.
-        '''
+        """
         try:
             as_str = ' '.join(items)
         except TypeError as err:
@@ -156,18 +163,18 @@ class myListbox(tk.Listbox):
         self.value.set(as_str)
     
     def get_selection(self) -> list:
-        '''
+        """
         Get list selection for listboxes. Always return a list, even if there's only one item selected
-        '''
+        """
         selected_indices = self.curselection()
         if selected_indices:
             return [self.get(i) for i in selected_indices]
         return [None]
     
     def set_selection(self, items: list) -> None:
-        '''
+        """
         Activate items in the list given as parameter
-        '''
+        """
         all_options = self.get(0, 'end')
         for i, option in enumerate(all_options):
             if option in items:
@@ -176,9 +183,9 @@ class myListbox(tk.Listbox):
                 self.selection_clear(i)
     
     def select_first(self) -> None:
-        '''
+        """
         Selects first item on the list. Raises IndexError if list is empty.
-        '''
+        """
         self.selection_clear(0, 'end')
         if not self.get(1): # Index 0 is always a heading, so check index 1
             raise IndexError('List is empty')
@@ -186,9 +193,9 @@ class myListbox(tk.Listbox):
         self.activate(1) 
 
     def select_last(self) -> None:
-        '''
+        """
         Selects last item on the list. Raises IndexError if list is empty.
-        '''
+        """
         self.selection_clear(0, 'end')
         if not self.get(1): # Index 0 is always a heading, so check index 1
             raise IndexError('List is empty')
@@ -196,9 +203,9 @@ class myListbox(tk.Listbox):
         self.activate('end')
 
 class myDialogBox(tk.Toplevel):
-    '''
+    """
     Generic dialogbox class. Not to be instantiated, but subclassed.
-    '''
+    """
     def __init__(self, master, iconpath: str = None, *args, **kwargs) -> None:
         super().__init__(master=master, *args, **kwargs)
         self.master=master
@@ -208,16 +215,16 @@ class myDialogBox(tk.Toplevel):
 
     
     def save_and_destroy(self) -> None:
-        '''
+        """
         Implement this when subclassing
-        '''
+        """
         pass
 
     def show(self) -> dict:
-        '''
+        """
         Prevents losing focus until window is destroyed.
         Returns a dictionary with the value of all forms to the caller
-        '''
+        """
         self.focus_set()
         self.grab_set()
         self.wait_window()

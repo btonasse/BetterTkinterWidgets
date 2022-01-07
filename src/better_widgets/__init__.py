@@ -7,25 +7,24 @@ class App(Tk):
     Subclasses the Tk() function, performing an initial configuration of the main window
     and creating template methods for showing widgets, setting bindings and running the app.
     """
-    def __init__(self, title: str, iconpath: str = None, menu: bool = True, geometry: str = None, *args, **kwargs) -> None:
+    def __init__(self, title: str = None, iconpath: str = None, menu: bool = True, geometry: str = None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.titletext = title
         self.iconpath = iconpath
         # Set appearance
-        self.title(self.titletext)
+        if title:
+            self.title(self.titletext)
         if iconpath:
             self.iconbitmap(self.iconpath)
-        
-        # Load menu
-        if menu:
-            self.menu = wd.MainMenu(self)
-
-        # Set geometry:
         if geometry:
             try:
                 self.geometry(geometry)
             except tkinter.TclError as err:
                 raise ValueError(f"Wrong geometry string: {geometry}") from err
+        
+        # Load menu
+        if menu:
+            self.menu = wd.MainMenu(self)
      
         # Set initial minsize 
         self.update()
