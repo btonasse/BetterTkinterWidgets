@@ -146,6 +146,37 @@ class myEntry(ttk.Entry):
         self.valuevar.set(str(txt))
         self._value = str(txt)
 
+class myCombobox(ttk.Combobox):
+    """
+    Combobox with an StringVar property if no 'textvariable' argument is passed upon instantiation.
+    """
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__ (*args, **kwargs)
+        self.config(exportselection=0)
+        
+        # Implement set/get and textvariable without the need of an external StringVar
+        self.valuevar = None
+        for kwarg, value in kwargs.items():
+            if kwarg == 'textvariable':
+                if not isinstance(value, tk.StringVar):
+                    raise ValueError(f'Textvariable must be StringVar')
+                self.valuevar = value
+        if not self.valuevar:
+            self.valuevar = tk.StringVar()
+            self.config(textvariable=self.valuevar)
+        
+        self.value = self.valuevar.get()
+    
+    @property
+    def value(self) -> str:
+        self._value = self.valuevar.get()
+        return self._value
+
+    @value.setter
+    def value(self, txt: str):
+        self.valuevar.set(str(txt))
+        self._value = str(txt)
+
 class myListbox(tk.Listbox):
     """
     Subclass of Listbox with embedded Scrollbar and a 'value' property to set values
