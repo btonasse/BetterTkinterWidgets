@@ -122,8 +122,8 @@ class myEntry(ttk.Entry):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__ (*args, **kwargs)
         self.config(exportselection=0)
+        
         # Implement set/get and textvariable without the need of an external StringVar
-
         self.valuevar = None
         for kwarg, value in kwargs.items():
             if kwarg == 'textvariable':
@@ -148,27 +148,35 @@ class myEntry(ttk.Entry):
 
 class myListbox(tk.Listbox):
     """
-    Subclass of Listbox with embedded Scrollbar and a better interface to read and write values:
-    set_items():
-        Pass a list of strings to use them to populate the listbox
-        
+    Subclass of Listbox with embedded Scrollbar and a 'value' property to set values
+    The getter method for 'value' always returns a list of the listbox elements
+    The setter method accepts either the standard Lisbox input (a string separated by spaces) or a list
     """
-    def __init__(self, master, *args, **kwargs) -> None:
-        super().__init__ (master=master, *args, **kwargs)
-        self.master = master
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__ (*args, **kwargs)
         self.scroll = ttk.Scrollbar(self.master, command=self.yview)
         self.config(exportselection=0, activestyle='none', yscrollcommand=self.scroll.set)
-        self.value = None
+        
+        # Implement set/get and textvariable without the need of an external StringVar
+        self.valuevar = None
         for kwarg, value in kwargs.items():
             if kwarg == 'listvariable':
                 if not isinstance(value, tk.StringVar):
                     raise ValueError(f'Listvariable must be StringVar')
-                self.value = value
-        if not self.value:
-            self.value = tk.StringVar()
-            self.config(listvariable=self.value)
-    
-    def set_items(self, items: list) -> None:
+                self.value = self.valuevar
+        if not self.valuevar:
+            self.valuevar = tk.StringVar()
+            self.config(listvariable=self.valuevar)
+        
+        self.value = self.valuevar.get()
+
+    @property
+    def value(self) -> list:
+        self._value = list(self.get(0, 'end'))
+        return self._value
+
+    @value.setter
+    def value(self, items: Union[str, list]) -> None:
         """
         Set list items. List elements must be strings.
         """
@@ -176,8 +184,9 @@ class myListbox(tk.Listbox):
             as_str = ' '.join(items)
         except TypeError as err:
             raise TypeError("At least one list item is not a string.") from err
-        self.value.set(as_str)
-    
+        self.valuevar.set(as_str)
+        self._value = as_str
+
     def get_selection(self) -> list:
         """
         Get list selection for listboxes. Always return a list, even if there's only one item selected
@@ -203,10 +212,10 @@ class myListbox(tk.Listbox):
         Selects first item on the list. Raises IndexError if list is empty.
         """
         self.selection_clear(0, 'end')
-        if not self.get(1): # Index 0 is always a heading, so check index 1
+        if not self.get(0):
             raise IndexError('List is empty')
-        self.selection_set(1)
-        self.activate(1) 
+        self.selection_set(0)
+        self.activate(0) 
 
     def select_last(self) -> None:
         """
