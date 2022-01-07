@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
+from typing import Union
 class MainMenu(tk.Menu):
     """
     Subclass of Menu widget that automatically associates it to root
@@ -29,23 +30,18 @@ class myText(tk.Text):
         self._value = self.get('1.0', 'end').rstrip()
         return self._value
 
-    @property.setter    
-    def value(self, text: str) -> None:
+    @value.setter    
+    def value(self, text: Union[str, list]) -> None:
         """
-        Replaces text on the widget. Non strings are forcibly converted to str to avoid errors.
+        Replaces text on the widget.
+        Non strings are forcibly converted to str to avoid errors,
+        with the exception of lists, that are joined with newlines as separators.
         """
-        self._value = str(text)
         self.clear()
-        self.insert('end', self._value)
-        self.edit_reset() # Clear undo stack
-    
-    def set_from_list(self, lst: list) -> None:
-        """
-        Replaces text on the widget with the contents of a list, one per line.
-        Non strings are forcibly converted to str to avoid errors.
-        """
-        self._value = '\n'.join([str(x) for x in lst])
-        self.clear()
+        if isinstance(text, list):
+            self._value = '\n'.join([str(x) for x in text])
+        else:
+            self._value = str(text)
         self.insert('end', self._value)
         self.edit_reset() # Clear undo stack
 
@@ -59,26 +55,37 @@ class myText(tk.Text):
 
 class DynamicLabel(tk.Label):
     """
-    Label with set() and get() methods. If no textvariable is provided, an internal StringVar is used.
+    Label with setter and getter properties. If no textvariable is provided, an internal StringVar is used.
     """
-    def __init__(self, master, *args, **kwargs) -> None:
-        super().__init__ (master=master, *args, **kwargs)
-        self.master = master
-        self.value = None
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__ (*args, **kwargs)
+        self.valuevar = None
         # Implement set/get and textvariable without the need of an external StringVar
         for kwarg, value in kwargs.items():
             if kwarg == 'textvariable':
                 if not isinstance(value, tk.StringVar):
                     raise ValueError(f'Textvariable must be StringVar')
-                self.value = value
-        if not self.value:
-            self.value = tk.StringVar()
-            self.config(textvariable=self.value)
+                self.valuevar = value
+                self.value = self.valuevar.get()
+        if not self.valuevar:
+            self.valuevar = tk.StringVar()
+            self.value = self.valuevar.get()
+            self.config(textvariable=self.valuevar)
 
-    def set(self, txt) -> None:
-        self.value.set(txt)
-    def get(self) -> None:
-        return self.value.get()
+    @property
+    def value(self) -> str:
+        self._value = self.valuevar.get()
+        return self._value
+
+    @value.setter
+    def value(self, txt: str):
+        self.valuevar.set(str(txt))
+        self._value = str(txt)
+
+    #def set(self, txt) -> None:
+    #    self.value.set(txt)
+    #def get(self) -> None:
+    #    return self.value.get()
 
 class myCheckBox(ttk.Checkbutton):
     """
