@@ -268,12 +268,12 @@ class FileDialogButton(ttk.Button):
     Has to be instantiated after an associated myEntry, where the path will be displayed. 
     Type is the type of file dialog to be opened. These are Tkinter's filedialog function names without the 'ask' prefix. Eg: directory or openfiles
     """
-    def __init__(self, master, entry: myEntry, typ: str, *args, **kwargs) -> None:
+    def __init__(self, *args, entry: myEntry = None, typ: str = None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.master = master
         self.entry = entry
         self.config(command = self.callback)
-
+        if not entry or not typ:
+            raise TypeError("Kwargs 'entry' are 'typ' are required")
         # Set appropriate filedialog function
         try:
             self.filedialog_function = getattr(filedialog, 'ask' + typ)
@@ -285,4 +285,4 @@ class FileDialogButton(ttk.Button):
         Opens the folder dialog
         """
         path = self.filedialog_function()
-        self.entry.set(path)
+        self.entry.value = path
