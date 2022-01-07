@@ -59,18 +59,18 @@ class DynamicLabel(tk.Label):
     """
     def __init__(self, *args, **kwargs) -> None:
         super().__init__ (*args, **kwargs)
-        self.valuevar = None
         # Implement set/get and textvariable without the need of an external StringVar
+        self.valuevar = None
         for kwarg, value in kwargs.items():
             if kwarg == 'textvariable':
                 if not isinstance(value, tk.StringVar):
                     raise ValueError(f'Textvariable must be StringVar')
                 self.valuevar = value
-                self.value = self.valuevar.get()
         if not self.valuevar:
             self.valuevar = tk.StringVar()
-            self.value = self.valuevar.get()
             self.config(textvariable=self.valuevar)
+        
+        self.value = self.valuevar.get()
 
     @property
     def value(self) -> str:
@@ -82,60 +82,69 @@ class DynamicLabel(tk.Label):
         self.valuevar.set(str(txt))
         self._value = str(txt)
 
-    #def set(self, txt) -> None:
-    #    self.value.set(txt)
-    #def get(self) -> None:
-    #    return self.value.get()
-
 class myCheckBox(ttk.Checkbutton):
     """
     Checkbox with an IntVar if no 'variable' argument is passed upon instantiation.
-    Also implements get and set methods.
+    Also implements get and set properties.
     """
-    def __init__(self, master, *args, **kwargs) -> None:
-        super().__init__ (master=master, *args, **kwargs)
-        self.master = master 
-        self.value = None
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__ (*args, **kwargs)
+        # Implement set/get and textvariable without the need of an external IntVar
+        self.valuevar = None
         for kwarg, value in kwargs.items():
             if kwarg == 'variable':
                 if not isinstance(value, tk.IntVar):
                     raise ValueError(f'variable must be IntVar')
-                self.value = value
-        if not self.value:
-            self.value = tk.IntVar()
-            self.config(variable=self.value)
+                self.valuevar = value    
+        if not self.valuevar:
+            self.valuevar = tk.IntVar()
+            self.config(variable=self.valuevar)
+        
+        self.value = self.valuevar.get()
     
-    def set(self, flag: int) -> None:
+    @property
+    def value(self) -> int:
+        self._value = self.valuevar.get()
+        return self._value
+
+    @value.setter
+    def value(self, flag: int):
         if flag not in [0, 1]:
             raise ValueError(f'Checkbox can only be set to 0 or 1, not {flag}')
-        self.value.set(flag)
-    def get(self) -> None:
-        return self.value.get()
-
+        self.valuevar.set(flag)
+        self._value = flag
 class myEntry(ttk.Entry):
     """
     Checkbox with an StringVar if no 'textvariable' argument is passed upon instantiation.
-    Also implements get and set methods (using self.value attribute).
+    Also implements get and set properties.
     Unlike default ttk.Entry, exportselection defaults to 0.
     """
-    def __init__(self, master, *args, **kwargs) -> None:
-        super().__init__ (master=master, *args, **kwargs)
-        self.master=master
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__ (*args, **kwargs)
         self.config(exportselection=0)
-        self.value = None
+        # Implement set/get and textvariable without the need of an external StringVar
+
+        self.valuevar = None
         for kwarg, value in kwargs.items():
             if kwarg == 'textvariable':
                 if not isinstance(value, tk.StringVar):
                     raise ValueError(f'Textvariable must be StringVar')
-                self.value = value
-        if not self.value:
-            self.value = tk.StringVar()
-            self.config(textvariable=self.value)
+                self.valuevar = value
+        if not self.valuevar:
+            self.valuevar = tk.StringVar()
+            self.config(textvariable=self.valuevar)
+        
+        self.value = self.valuevar.get()
     
-    def set(self, txt) -> None:
-        self.value.set(txt)
-    def get(self) -> None:
-        return self.value.get()
+    @property
+    def value(self) -> str:
+        self._value = self.valuevar.get()
+        return self._value
+
+    @value.setter
+    def value(self, txt: str):
+        self.valuevar.set(str(txt))
+        self._value = str(txt)
 
 class myListbox(tk.Listbox):
     """
